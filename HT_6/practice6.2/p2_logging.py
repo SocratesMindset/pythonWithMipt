@@ -52,3 +52,27 @@ def safe_call(fn: Callable, *args, log: LogManager, level_ok: str = "INFO", leve
     except Exception as e:
         log.log("FATAL", source, f"unexpected: {fn.__name__}: {e}", event_id=event_id, extra=extra_err)
         raise
+
+if __name__ == "__main__":
+    def divide(a: int, b: int) -> float:
+        return a / b
+
+    def read_file(path: str) -> str:
+        with open(path, "r", encoding="utf-8") as f:
+            return f.read()
+
+    with LogManager(user="student", session="session123") as log:
+        result = safe_call(divide, 10, 2, log=log, source="math_module", extra_ok={"a": 10, "b": 2})
+        print("Результат деления:", result)
+
+        try:
+            safe_call(divide, 10, 0, log=log, source="math_module", extra_err={"a": 10, "b": 0})
+        except Exception:
+            print("Произошла ошибка при делении на ноль")
+
+        try:
+            safe_call(read_file, "no_such_file.txt", log=log, source="file_module", extra_err="missing file")
+        except Exception:
+            print("Ошибка при чтении файла")
+
+    print("Все логи записаны в Log.txt")
